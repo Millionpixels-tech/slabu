@@ -137,15 +137,6 @@ export const AgencyDetailPage = () => {
               </div>
             )}
 
-            {agency.registrationNumber && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500">
-                  Registration Number
-                </label>
-                <p className="mt-1 text-base text-gray-900 break-words">{agency.registrationNumber}</p>
-              </div>
-            )}
-
             {agency.contactPerson && (
               <div>
                 <label className="block text-sm font-medium text-gray-500">Contact Person</label>
@@ -157,30 +148,6 @@ export const AgencyDetailPage = () => {
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-500">Address</label>
                 <p className="mt-1 text-base text-gray-900 break-words">{agency.address}</p>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-500">Registered Date</label>
-              <p className="mt-1 text-base text-gray-900">
-                {new Date(agency.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
-            </div>
-
-            {agency.approvedAt && (
-              <div>
-                <label className="block text-sm font-medium text-gray-500">Approved Date</label>
-                <p className="mt-1 text-base text-gray-900">
-                  {new Date(agency.approvedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
               </div>
             )}
           </div>

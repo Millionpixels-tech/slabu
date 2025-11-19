@@ -281,7 +281,7 @@ export const EditProfilePage = () => {
               type="email"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
-              placeholder="Enter new email address"
+              placeholder="e.g., newemail@agency.lk"
               required
               disabled={emailLoading}
             />
@@ -340,7 +340,7 @@ export const EditProfilePage = () => {
               type="tel"
               value={newPhone}
               onChange={(e) => setNewPhone(e.target.value)}
-              placeholder="Enter new phone number"
+              placeholder="e.g., +94 77 123 4567"
               required
               disabled={phoneLoading}
             />
@@ -409,7 +409,7 @@ export const EditProfilePage = () => {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password (min. 6 characters)"
+              placeholder="Minimum 6 characters"
               required
               disabled={passwordLoading}
             />
@@ -419,7 +419,7 @@ export const EditProfilePage = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
+              placeholder="Re-enter new password"
               required
               disabled={passwordLoading}
             />

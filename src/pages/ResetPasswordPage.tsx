@@ -98,7 +98,7 @@ export const ResetPasswordPage = () => {
         <div className="max-w-md w-full space-y-6 sm:space-y-8">
           <div className="text-center">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Blacklist System
+              slabu.lk
             </h1>
             <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">
               Reset Password Failed
@@ -135,7 +135,7 @@ export const ResetPasswordPage = () => {
       <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="text-center">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-            Blacklist System
+            slabu.lk
           </h1>
           <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">
             Set New Password

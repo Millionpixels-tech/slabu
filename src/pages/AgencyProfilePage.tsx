@@ -197,11 +197,11 @@ export const AgencyProfilePage = () => {
             <div>
               <label className="block text-sm font-medium text-gray-500">Member Since</label>
               <p className="mt-1 text-base text-gray-900">
-                {new Date(agency.createdAt).toLocaleDateString('en-US', {
+                {agency.createdAt ? new Date(agency.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                })}
+                }) : 'N/A'}
               </p>
             </div>
           </div>
@@ -289,7 +289,7 @@ export const AgencyProfilePage = () => {
                           {entry.passportNumber}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(entry.createdAt).toLocaleDateString()}
+                          {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
@@ -331,7 +331,7 @@ export const AgencyProfilePage = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-500">Added:</span>
-                        <span className="text-gray-900">{new Date(entry.createdAt).toLocaleDateString()}</span>
+                        <span className="text-gray-900">{entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'N/A'}</span>
                       </div>
                     </div>
 

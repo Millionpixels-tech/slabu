@@ -32,7 +32,7 @@ export const Layout = ({ children }: LayoutProps) => {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="text-xl sm:text-2xl font-bold text-primary-600">
-                Blacklist System
+                slabu.lk
               </Link>
             </div>
 

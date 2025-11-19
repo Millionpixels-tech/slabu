@@ -49,7 +49,7 @@ export const HomePage = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Input
                 type="text"
-                placeholder="Search by name, ID number, or passport number..."
+                placeholder="e.g., Saman Kumara, N1234567, or 199012345678V"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1"
@@ -59,7 +59,7 @@ export const HomePage = () => {
               </Button>
             </div>
             <p className="text-sm text-gray-500">
-              💡 Tip: You can search using name, ID number, or passport number
+              💡 Tip: You can search using name, NIC number, or passport number
             </p>
           </form>
         </Card>
@@ -149,7 +149,7 @@ export const HomePage = () => {
                             <div>
                               <span className="font-medium text-gray-700">Added:</span>
                               <p className="text-gray-600">
-                                {new Date(entry.createdAt).toLocaleDateString()}
+                                {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'N/A'}
                               </p>
                             </div>
                           </div>

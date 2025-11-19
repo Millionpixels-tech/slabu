@@ -48,7 +48,13 @@ export const getBlacklistEntry = async (id: string): Promise<BlacklistEntry | nu
   const entryDoc = await getDoc(doc(db, 'blacklist', id));
   if (!entryDoc.exists()) return null;
   
-  return { id: entryDoc.id, ...entryDoc.data() } as BlacklistEntry;
+  const data = entryDoc.data();
+  return { 
+    id: entryDoc.id, 
+    ...data,
+    createdAt: data.createdAt?.toDate?.() || data.createdAt,
+    updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+  } as BlacklistEntry;
 };
 
 // Optimized search function - searches by full name, ID number, or passport number
@@ -68,10 +74,15 @@ export const searchBlacklistEntries = async (
   );
   
   const snapshot = await getDocs(allEntriesQuery);
-  const allEntries = snapshot.docs.map(doc => ({ 
-    id: doc.id, 
-    ...doc.data() 
-  } as BlacklistEntry));
+  const allEntries = snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id, 
+      ...data,
+      createdAt: data.createdAt?.toDate?.() || data.createdAt,
+      updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+    } as BlacklistEntry;
+  });
   
   // Filter entries that match the search term in any field
   const filteredEntries = allEntries.filter(entry => {
@@ -94,14 +105,30 @@ export const getAgencyBlacklistEntries = async (agencyId: string): Promise<Black
   );
   
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlacklistEntry));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.() || data.createdAt,
+      updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+    } as BlacklistEntry;
+  });
 };
 
 // Get all blacklist entries (admin only)
 export const getAllBlacklistEntries = async (): Promise<BlacklistEntry[]> => {
   const q = query(collection(db, 'blacklist'), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BlacklistEntry));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.() || data.createdAt,
+      updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+    } as BlacklistEntry;
+  });
 };
 
 // Delete blacklist entry (unblacklist)

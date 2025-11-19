@@ -112,7 +112,7 @@ export const AddBlacklistPage = () => {
               <div className="md:col-span-2">
                 <Input
                   label="Full Name *"
-                  placeholder="John Doe"
+                  placeholder="e.g., W.A. Saman Kumara"
                   error={errors.fullName?.message}
                   {...register('fullName', { required: 'Full name is required' })}
                 />
@@ -120,14 +120,14 @@ export const AddBlacklistPage = () => {
 
               <Input
                 label="Passport Number *"
-                placeholder="P1234567"
+                placeholder="e.g., N1234567"
                 error={errors.passportNumber?.message}
                 {...register('passportNumber', { required: 'Passport number is required' })}
               />
 
               <Input
                 label="ID Number *"
-                placeholder="ID123456789"
+                placeholder="e.g., 199012345678 or 199012345678V"
                 error={errors.idNumber?.message}
                 {...register('idNumber', { required: 'ID number is required' })}
               />
@@ -135,7 +135,7 @@ export const AddBlacklistPage = () => {
               <div className="md:col-span-2">
                 <Input
                   label="Address *"
-                  placeholder="123 Main Street, City, Country"
+                  placeholder="e.g., No. 45/2, Temple Road, Gampaha"
                   error={errors.address?.message}
                   {...register('address', { required: 'Address is required' })}
                 />
@@ -149,7 +149,7 @@ export const AddBlacklistPage = () => {
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[120px] ${
                     errors.description ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Provide details about why this individual is being blacklisted..."
+                  placeholder="e.g., Failed to fulfill employment contract, absconded from workplace, fraudulent documentation, etc."
                   {...register('description', { required: 'Description is required' })}
                 />
                 {errors.description && (

@@ -145,7 +145,7 @@ export const AdminDashboardPage = () => {
                     <div>
                       <span className="font-medium text-gray-700">Registered:</span>
                       <p className="text-gray-600">
-                        {new Date(agency.createdAt).toLocaleDateString()}
+                        {agency.createdAt ? new Date(agency.createdAt).toLocaleDateString() : 'N/A'}
                       </p>
                     </div>
                     

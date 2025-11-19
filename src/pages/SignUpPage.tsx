@@ -99,7 +99,7 @@ export const SignUpPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="max-w-2xl w-full">
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Blacklist System</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">slabu.lk</h1>
           <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">Create Agency Account</h2>
           <p className="mt-2 text-sm text-gray-600">
             Already have an account?{' '}
@@ -120,14 +120,14 @@ export const SignUpPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Input
                 label="Agency Name"
-                placeholder="ABC Security Agency"
+                placeholder="e.g., Lanka Overseas Employment Agency"
                 error={errors.agencyName?.message}
                 {...register('agencyName', { required: 'Agency name is required' })}
               />
 
               <Input
                 label="Registration Number"
-                placeholder="REG123456"
+                placeholder="e.g., SLBFE/2023/1234"
                 error={errors.registrationNumber?.message}
                 {...register('registrationNumber', { required: 'Registration number is required' })}
               />
@@ -135,7 +135,7 @@ export const SignUpPage = () => {
               <Input
                 label="Email Address"
                 type="email"
-                placeholder="info@agency.com"
+                placeholder="e.g., info@lankaemployment.lk"
                 error={errors.email?.message}
                 {...register('email', {
                   required: 'Email is required',
@@ -149,14 +149,14 @@ export const SignUpPage = () => {
               <Input
                 label="Phone Number"
                 type="tel"
-                placeholder="+1 234 567 8900"
+                placeholder="e.g., +94 11 234 5678"
                 error={errors.phone?.message}
                 {...register('phone', { required: 'Phone number is required' })}
               />
 
               <Input
                 label="Contact Person"
-                placeholder="John Doe"
+                placeholder="e.g., Saman Perera"
                 error={errors.contactPerson?.message}
                 {...register('contactPerson', { required: 'Contact person is required' })}
               />
@@ -164,7 +164,7 @@ export const SignUpPage = () => {
               <div className="md:col-span-2">
                 <Input
                   label="Address"
-                  placeholder="123 Main St, City, Country"
+                  placeholder="e.g., No. 123, Galle Road, Colombo 03"
                   error={errors.address?.message}
                   {...register('address', { required: 'Address is required' })}
                 />

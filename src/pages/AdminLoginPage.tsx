@@ -52,7 +52,7 @@ export const AdminLoginPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 sm:space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Blacklist System</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">slabu.lk</h1>
           <h2 className="mt-4 sm:mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">Admin Login</h2>
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800">
@@ -72,7 +72,7 @@ export const AdminLoginPage = () => {
             <Input
               label="Admin Access Code"
               type="password"
-              placeholder="Enter admin code"
+              placeholder="Enter admin access code"
               error={errors.adminCode?.message}
               {...register('adminCode', {
                 required: 'Admin code is required',
@@ -82,7 +82,7 @@ export const AdminLoginPage = () => {
             <Input
               label="Email Address"
               type="email"
-              placeholder="admin@example.com"
+              placeholder="admin@slabu.lk"
               error={errors.email?.message}
               {...register('email', {
                 required: 'Email is required',
@@ -96,7 +96,7 @@ export const AdminLoginPage = () => {
             <Input
               label="Password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               error={errors.password?.message}
               {...register('password', {
                 required: 'Password is required',

@@ -56,7 +56,13 @@ export const getAgency = async (agencyId: string): Promise<Agency | null> => {
   const agencyDoc = await getDoc(doc(db, 'agencies', agencyId));
   if (!agencyDoc.exists()) return null;
   
-  return { id: agencyDoc.id, ...agencyDoc.data() } as Agency;
+  const data = agencyDoc.data();
+  return {
+    id: agencyDoc.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.() || data.createdAt,
+    approvedAt: data.approvedAt?.toDate?.() || data.approvedAt,
+  } as Agency;
 };
 
 export const getPendingAgencies = async (): Promise<Agency[]> => {
@@ -67,7 +73,15 @@ export const getPendingAgencies = async (): Promise<Agency[]> => {
   );
   
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Agency));
+  return snapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      createdAt: data.createdAt?.toDate?.() || data.createdAt,
+      approvedAt: data.approvedAt?.toDate?.() || data.approvedAt,
+    } as Agency;
+  });
 };
 
 export const updateAgencyStatus = async (
@@ -89,5 +103,11 @@ export const getAgencyByUserId = async (userId: string): Promise<Agency | null> 
   if (snapshot.empty) return null;
   
   const doc = snapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as Agency;
+  const data = doc.data();
+  return {
+    id: doc.id,
+    ...data,
+    createdAt: data.createdAt?.toDate?.() || data.createdAt,
+    approvedAt: data.approvedAt?.toDate?.() || data.approvedAt,
+  } as Agency;
 };

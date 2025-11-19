@@ -194,11 +194,11 @@ export const BlacklistDetailPage = () => {
                 {entry.agencyName}
               </Link>
               <p className="text-sm text-gray-500 mt-1">
-                Added on {new Date(entry.createdAt).toLocaleDateString('en-US', {
+                Added on {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',
-                })}
+                }) : 'N/A'}
               </p>
               {entry.updatedAt && entry.updatedAt !== entry.createdAt && (
                 <p className="text-sm text-gray-500">
