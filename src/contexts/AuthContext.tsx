@@ -36,15 +36,47 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // Fetch user data from Firestore
-        const userData = await getUserData(firebaseUser.uid);
-        if (userData) {
-          setCurrentUser(userData);
+        // Check if we have cached user data in sessionStorage for faster load
+        const cachedUserData = sessionStorage.getItem(`user_${firebaseUser.uid}`);
+        
+        if (cachedUserData) {
+          // Use cached data immediately for faster page load
+          try {
+            const parsedData = JSON.parse(cachedUserData);
+            setCurrentUser(parsedData);
+            setLoading(false);
+            
+            // Fetch fresh data in background to keep cache updated
+            getUserData(firebaseUser.uid).then(freshData => {
+              if (freshData) {
+                setCurrentUser(freshData);
+                sessionStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(freshData));
+              }
+            }).catch(err => console.error('Failed to refresh user data:', err));
+          } catch (err) {
+            console.error('Failed to parse cached user data:', err);
+            // If cache is corrupted, fetch fresh data
+            const userData = await getUserData(firebaseUser.uid);
+            if (userData) {
+              setCurrentUser(userData);
+              sessionStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+            }
+            setLoading(false);
+          }
+        } else {
+          // No cache, fetch user data from Firestore
+          const userData = await getUserData(firebaseUser.uid);
+          if (userData) {
+            setCurrentUser(userData);
+            // Cache for next time
+            sessionStorage.setItem(`user_${firebaseUser.uid}`, JSON.stringify(userData));
+          }
+          setLoading(false);
         }
       } else {
         setCurrentUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
@@ -87,6 +119,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = async () => {
+    // Clear user cache on logout
+    if (auth.currentUser) {
+      sessionStorage.removeItem(`user_${auth.currentUser.uid}`);
+    }
     await signOut(auth);
     setCurrentUser(null);
   };
@@ -121,6 +157,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const userData = await getUserData(currentUser.uid);
       if (userData) {
         setCurrentUser(userData);
+        // Update cache with fresh data
+        sessionStorage.setItem(`user_${currentUser.uid}`, JSON.stringify(userData));
       }
     }
   };

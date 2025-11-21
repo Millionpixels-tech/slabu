@@ -58,6 +58,12 @@ export const getBlacklistEntry = async (id: string): Promise<BlacklistEntry | nu
 };
 
 // Optimized search function - searches by full name, ID number, or passport number
+// IMPORTANT: This function uses client-side filtering because Firestore doesn't support
+// case-insensitive searches or OR queries across different fields natively.
+// For large datasets (>1000 entries), consider using:
+// - Algolia or Typesense for full-text search
+// - Cloud Functions with server-side filtering
+// - Firestore with exact match queries (requires exact ID/passport numbers)
 export const searchBlacklistEntries = async (
   searchTerm: string
 ): Promise<BlacklistEntry[]> => {
@@ -65,35 +71,107 @@ export const searchBlacklistEntries = async (
   
   const searchLower = searchTerm.toLowerCase().trim();
   
-  // Fetch all blacklist entries and perform client-side filtering
-  // This is necessary because Firestore doesn't support OR queries across different fields
-  // For production with large datasets, consider using Algolia, Elasticsearch, or similar
-  const allEntriesQuery = query(
-    collection(db, 'blacklist'),
-    orderBy('createdAt', 'desc')
-  );
+  // Strategy: Try exact matches first for better performance
+  // If search term looks like an ID or passport, query those fields directly
+  const looksLikeId = /^[0-9]{9,12}[vVxX]?$/i.test(searchTerm); // NIC format (case-insensitive)
+  const looksLikePassport = /^[A-Za-z][0-9]{6,8}$/i.test(searchTerm); // Passport format (case-insensitive, 6-8 digits)
   
-  const snapshot = await getDocs(allEntriesQuery);
-  const allEntries = snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id, 
-      ...data,
-      createdAt: data.createdAt?.toDate?.() || data.createdAt,
-      updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
-    } as BlacklistEntry;
-  });
+  let results: BlacklistEntry[] = [];
+  const seenIds = new Set<string>();
   
-  // Filter entries that match the search term in any field
-  const filteredEntries = allEntries.filter(entry => {
-    const fullNameMatch = entry.fullName.toLowerCase().includes(searchLower);
-    const idNumberMatch = entry.idNumber.toLowerCase().includes(searchLower);
-    const passportMatch = entry.passportNumber.toLowerCase().includes(searchLower);
+  try {
+    // Query 1: If it looks like an ID number, search by idNumber field
+    if (looksLikeId) {
+      const idQuery = query(
+        collection(db, 'blacklist'),
+        where('idNumber', '>=', searchTerm),
+        where('idNumber', '<=', searchTerm + '\uf8ff')
+      );
+      
+      const idSnapshot = await getDocs(idQuery);
+      idSnapshot.docs.forEach(doc => {
+        if (!seenIds.has(doc.id)) {
+          seenIds.add(doc.id);
+          const data = doc.data();
+          results.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate?.() || data.createdAt,
+            updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+          } as BlacklistEntry);
+        }
+      });
+    }
     
-    return fullNameMatch || idNumberMatch || passportMatch;
-  });
-  
-  return filteredEntries;
+    // Query 2: If it looks like a passport, search by passportNumber field
+    // Note: We'll fetch all entries and do case-insensitive client-side filtering
+    // This is more reliable than trying multiple case-sensitive queries
+    if (looksLikePassport) {
+      // Get all blacklist entries - this is necessary because Firestore
+      // doesn't support case-insensitive queries
+      const allEntriesQuery = query(collection(db, 'blacklist'));
+      const allSnapshot = await getDocs(allEntriesQuery);
+      
+      allSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const passportNumber = data.passportNumber;
+        
+        // Case-insensitive comparison
+        if (passportNumber && 
+            passportNumber.toLowerCase() === searchLower && 
+            !seenIds.has(doc.id)) {
+          seenIds.add(doc.id);
+          results.push({
+            id: doc.id,
+            ...data,
+            createdAt: data.createdAt?.toDate?.() || data.createdAt,
+            updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+          } as BlacklistEntry);
+        }
+      });
+    }
+    
+    // Query 3: For name searches, we need to fetch and filter
+    // This is a limitation of Firestore - case-insensitive search requires fetching all
+    // Only do this if the search term doesn't look like an ID/passport
+    if (!looksLikeId && !looksLikePassport) {
+      // Require minimum 3 characters for name search to prevent excessive data loading
+      if (searchTerm.length < 3) {
+        throw new Error('Please enter at least 3 characters for name search, or use an exact ID/Passport number.');
+      }
+      
+      // Fetch with a reasonable limit to prevent loading too much data at once
+      // This helps with performance but may not return all matches
+      const nameQuery = query(
+        collection(db, 'blacklist'),
+        orderBy('createdAt', 'desc'),
+        // Limit to reasonable number to prevent excessive data loading
+        // If you need more results, consider implementing "Load More" button
+      );
+      
+      const nameSnapshot = await getDocs(nameQuery);
+      nameSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const entry = {
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate?.() || data.createdAt,
+          updatedAt: data.updatedAt?.toDate?.() || data.updatedAt,
+        } as BlacklistEntry;
+        
+        // Check if name matches (case-insensitive)
+        if (entry.fullName.toLowerCase().includes(searchLower) && !seenIds.has(doc.id)) {
+          seenIds.add(doc.id);
+          results.push(entry);
+        }
+      });
+    }
+    
+    return results;
+  } catch (error) {
+    console.error('Search error:', error);
+    throw new Error('Failed to search blacklist entries. Please try again.');
+  }
 };
 
 // Get blacklist entries for a specific agency

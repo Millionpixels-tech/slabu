@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { Card } from '../components/common/Card';
@@ -12,22 +12,49 @@ export const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState<BlacklistEntry[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm('');
+    setResults([]);
+    setHasSearched(false);
+    setSearchError(null);
+  }, []);
+
+  const handleSearch = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!searchTerm.trim()) {
+    const trimmedSearch = searchTerm.trim();
+    if (!trimmedSearch) {
+      return;
+    }
+
+    // Check if it looks like an ID or passport (these don't need minimum length)
+    const looksLikeId = /^[0-9]{9,12}[vVxX]?$/.test(trimmedSearch);
+    const looksLikePassport = /^[A-Za-z][0-9]{6,8}$/.test(trimmedSearch);
+    
+    // For name searches, require minimum 3 characters
+    if (!looksLikeId && !looksLikePassport && trimmedSearch.length < 3) {
+      setSearchError('Please enter at least 3 characters for name search, or use an exact ID/Passport number.');
       return;
     }
 
     setHasSearched(true);
+    setSearchError(null);
+    setResults([]);
+    
     try {
-      const data = await searchEntries(searchTerm);
+      const data = await searchEntries(trimmedSearch);
       setResults(data);
     } catch (error) {
       console.error('Search failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to search. Please try again.';
+      setSearchError(errorMessage);
     }
-  };
+  }, [searchTerm, searchEntries]);
+  
+  // Memoize the search button disabled state
+  const isSearchDisabled = useMemo(() => !searchTerm.trim() || loading, [searchTerm, loading]);
 
   return (
     <Layout>
@@ -47,19 +74,43 @@ export const HomePage = () => {
         <Card>
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
-              <Input
-                type="text"
-                placeholder="e.g., Saman Kumara, N1234567, or 199012345678V"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit" isLoading={loading} className="sm:whitespace-nowrap">
+              <div className="flex-1 relative">
+                <Input
+                  type="text"
+                  placeholder="e.g., Saman Kumara, N1234567, or 199012345678V"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  disabled={loading}
+                />
+                {searchTerm && !loading && (
+                  <button
+                    type="button"
+                    onClick={handleClearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <Button 
+                type="submit" 
+                isLoading={loading} 
+                disabled={isSearchDisabled}
+                className="sm:whitespace-nowrap"
+              >
                 Search
               </Button>
             </div>
+            {searchError && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-600">{searchError}</p>
+              </div>
+            )}
             <p className="text-sm text-gray-500">
-              💡 Tip: You can search using name, NIC number, or passport number
+              💡 <strong>Tip:</strong> Search by full name (min. 3 characters), NIC number, or passport number
             </p>
           </form>
         </Card>
@@ -68,12 +119,27 @@ export const HomePage = () => {
         {hasSearched && (
           <div>
             {loading ? (
-              <Card>
-                <div className="text-center py-8">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-600 border-t-transparent"></div>
-                  <p className="mt-2 text-gray-600">Searching...</p>
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-primary-600 border-t-transparent"></div>
+                  <p className="text-gray-600 font-medium">Searching database...</p>
                 </div>
-              </Card>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {/* Skeleton Loading Cards */}
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <Card key={i} className="animate-pulse">
+                      <div className="space-y-3">
+                        <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 rounded"></div>
+                          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                          <div className="h-4 bg-gray-200 rounded w-4/6"></div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             ) : results.length === 0 ? (
               <Card>
                 <div className="text-center py-12">
@@ -98,9 +164,17 @@ export const HomePage = () => {
               </Card>
             ) : (
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                  Found {results.length} result{results.length !== 1 ? 's' : ''}
-                </h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Found {results.length} result{results.length !== 1 ? 's' : ''}
+                  </h2>
+                  <button
+                    onClick={handleClearSearch}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    Clear Search
+                  </button>
+                </div>
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {results.map((entry) => (
                     <Link key={entry.id} to={`/blacklist/${entry.id}`}>

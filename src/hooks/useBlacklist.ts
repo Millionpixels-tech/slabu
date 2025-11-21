@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   createBlacklistEntry as createEntry,
@@ -8,12 +8,16 @@ import {
 } from '../services/blacklistService';
 import type { BlacklistEntry } from '../types';
 
+// Cache for agency names to avoid redundant fetches
+const agencyNameCache = new Map<string, string>();
+
 export const useBlacklist = () => {
   const { currentUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const agencyNameRef = useRef<string | null>(null);
 
-  const createBlacklistEntry = async (
+  const createBlacklistEntry = useCallback(async (
     data: Omit<BlacklistEntry, 'id' | 'createdAt' | 'updatedAt' | 'agencyId' | 'agencyName' | 'addedBy'>,
     files?: File[]
   ) => {
@@ -25,15 +29,23 @@ export const useBlacklist = () => {
     setError(null);
 
     try {
-      // Get agency name - in a real app, cache this
-      const { getAgency } = await import('../services/agencyService');
-      const agency = await getAgency(currentUser.agencyId);
+      // Use cached agency name if available
+      let agencyName = agencyNameCache.get(currentUser.agencyId);
+      
+      if (!agencyName) {
+        const { getAgency } = await import('../services/agencyService');
+        const agency = await getAgency(currentUser.agencyId);
+        agencyName = agency?.name || 'Unknown Agency';
+        // Cache the agency name for future use
+        agencyNameCache.set(currentUser.agencyId, agencyName);
+        agencyNameRef.current = agencyName;
+      }
 
       const entryId = await createEntry(
         {
           ...data,
           agencyId: currentUser.agencyId,
-          agencyName: agency?.name || 'Unknown Agency',
+          agencyName,
           addedBy: currentUser.uid,
         },
         files
@@ -47,9 +59,9 @@ export const useBlacklist = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser]);
 
-  const searchEntries = async (searchTerm: string) => {
+  const searchEntries = useCallback(async (searchTerm: string) => {
     setLoading(true);
     setError(null);
 
@@ -63,9 +75,9 @@ export const useBlacklist = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getEntry = async (id: string) => {
+  const getEntry = useCallback(async (id: string) => {
     setLoading(true);
     setError(null);
 
@@ -79,9 +91,9 @@ export const useBlacklist = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getAgencyEntries = async (agencyId: string) => {
+  const getAgencyEntries = useCallback(async (agencyId: string) => {
     setLoading(true);
     setError(null);
 
@@ -95,7 +107,7 @@ export const useBlacklist = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     loading,

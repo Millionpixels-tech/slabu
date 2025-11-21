@@ -4,6 +4,7 @@ import { Layout } from '../components/layout/Layout';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
+import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useAuth } from '../contexts/AuthContext';
 import { getAgencyByUserId } from '../services/agencyService';
 import type { Agency } from '../types';
@@ -12,6 +13,7 @@ export const EditProfilePage = () => {
   const { currentUser, changeEmail, changePassword, changePhone } = useAuth();
   const navigate = useNavigate();
   const [agency, setAgency] = useState<Agency | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
   
   // Email change state
   const [newEmail, setNewEmail] = useState('');
@@ -44,10 +46,13 @@ export const EditProfilePage = () => {
   const loadAgencyData = async () => {
     if (!currentUser?.uid) return;
     try {
+      setPageLoading(true);
       const agencyData = await getAgencyByUserId(currentUser.uid);
       setAgency(agencyData);
     } catch (err) {
       console.error('Failed to load agency data:', err);
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -217,6 +222,10 @@ export const EditProfilePage = () => {
       setPasswordLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <Layout>
